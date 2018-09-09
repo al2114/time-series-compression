@@ -3,7 +3,9 @@
 
 #include <iostream>
 
-void pack(std::istream &in, std::ostream &out);
-void unpack(std::istream &in, std::ostream &out);
+namespace SerialPacker {
+    void pack(std::istream &in, std::ostream &out);
+    void unpack(std::istream &in, std::ostream &out);
+}
 
 #endif
