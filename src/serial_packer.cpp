@@ -3,7 +3,47 @@
 #include <fstream>
 
 namespace SerialPacker {
-    static void packInt(int val, std::ostream &out) {
+
+    static void encodeVarInt(int val, std::ostream &out);
+    static int decodeVarInt(std::istream &in, int &value);
+
+    void pack(std::istream &in, std::ostream &out)
+    {
+        int timestamp, value;
+        int prev_ts = 0, prev_delta=0;
+        while(in >> timestamp >> value) {
+            int delta = timestamp - prev_ts;
+            int ddelta = delta - prev_delta;
+            encodeVarInt(ddelta, out);
+            encodeVarInt(value, out);
+            prev_ts = timestamp;
+            prev_delta = delta;
+        }
+
+    }
+    void unpack(std::istream &in, std::ostream &out)
+    {
+        bool decoding_timestamp = true;
+        int timestamp = 0;
+        int delta = 0;
+        int value = 0;
+
+        while(decodeVarInt(in, value)) {
+            if(decoding_timestamp) {
+                delta += value;
+                timestamp += delta;
+                out << timestamp;
+            }
+            else {
+                out << value;
+            }
+            if(in.peek() != EOF)
+                out << " ";
+            decoding_timestamp = !decoding_timestamp;
+        }
+    }
+
+    static void encodeVarInt(int val, std::ostream &out) {
         bool neg = val < 0;
         if (neg)
             val = -val; // Ensure val represents magnitude
@@ -13,67 +53,35 @@ namespace SerialPacker {
 
         while(val) { // If there are more bits
             byte += 0x80; // Set byte MSB to indicate continuation
-            out << byte; // Output encoded byte to stream
+            out.write(&byte, 1);
             byte = val & 0x7F; // Setup byte for next 7 bits
             val = val >> 7;
         }
-        out << byte;
-
+        out.write(&byte, 1);
     }
 
-    void pack(std::istream &in, std::ostream &out)
-    {
-        int timestamp, value;
-        int prev = 0;
-        while(in >> timestamp >> value) {
-            int ts_delta = timestamp - prev;
-            packInt(ts_delta, out);
-            packInt(value, out);
-            prev = timestamp;
-        }
-
-    }
-
-    void unpack(std::istream &in, std::ostream &out)
-    {
+    static int decodeVarInt(std::istream &in, int &value) {
         char byte;
-        int timestamp = 0;
-        bool decoding_timestamp = true;
+        bool neg;
+        int offset;
 
+        if(in.read(&byte, 1).eof())
+            return 0;
 
-        bool is_start = true;
-        bool neg = false;
-        int value = 0;
-        int offset = 0;
+        neg = byte & 1;
+        value = (byte >> 1) & 0x3F;
+        offset = 6;
 
-        while(in >> byte) {
-            if(is_start) {
-                is_start = false;
-                neg = byte & 1;
-                value = (byte>>1) & 0x3F;
-                offset += 6;
-            }
-            else {
-                value += (byte & 0x7F) << offset;
-                offset += 7;
-            }
-
-            if((byte & 0x80) == 0) {
-                if(neg)
-                    value = -value;
-                if(decoding_timestamp) {
-                    timestamp += value;
-                    out << timestamp;
-                }
-                else {
-                    out << value;
-                }
-                value = 0;
-                offset = 0;
-                is_start = true;
-                decoding_timestamp = !decoding_timestamp;
-            }
+        while( byte & 0x80 ) {
+            in.read(&byte, 1);
+            value += (byte & 0x7F) << offset;
+            offset += 7;
         }
+
+        if(neg)
+            value = -value;
+
+        return 1;
     }
 }
 
