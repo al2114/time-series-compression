@@ -15,6 +15,7 @@ obj/%.o: src/%.cpp
 
 clean:
 	rm bin/serial_packer
+	rm tests/*.pyc
 	rm obj/*.o
 	rm tmp/*
 

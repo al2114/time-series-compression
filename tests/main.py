@@ -7,15 +7,25 @@ test_sizes = {
     "big": 32768
     }
 
+
+def printTitle(title):
+    print ""
+    print "-" * len(title)
+    print title
+    print "-" * len(title)
+
 if __name__ == "__main__":
 
-    print "* * * * * * * * * * * * *"
-    print "Testing for correctness"
-    print "* * * * * * * * * * * * *"
+    printTitle("Testing functional correctness")
 
     for test in tests_correctness.tests:
         print "Test case: " + test.__name__,
         test()
         print "... PASSED"
+
+    n = len(tests_correctness.tests)
+    print "\nSuccessfully passed " + str(n) + " out of " + str(n) + " tests";
+
+    printTitle("Correctness and performance tests on different models")
 
 
