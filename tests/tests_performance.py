@@ -133,6 +133,8 @@ def runTests():
     num_success = 0
     best_compress = 0
     best_compress_test = ""
+    worst_compress = 100.0
+    worst_compress_test = ""
     avg_pack_throughput = 0
     avg_unpack_throughput = 0
     avg_compress = 0
@@ -147,6 +149,9 @@ def runTests():
         if res[3] > best_compress:
             best_compress_test = t
             best_compress = res[3]
+        if res[3] < worst_compress:
+            worst_compress_test = t
+            worst_compress = res[3]
     avg_pack_throughput = avg_pack_throughput/count
     avg_unpack_throughput = avg_unpack_throughput/count
     avg_compress = avg_compress/count
@@ -156,6 +161,7 @@ def runTests():
     print "Average unpacking throughput: %.2f kB/s" % avg_unpack_throughput
     print "Average compress rate: %.2f%%" % avg_compress
     print "Best compression test: %s (%.2f%%)" % (best_compress_test, best_compress)
+    print "Worst compression test: %s (%.2f%%)" % (worst_compress_test, worst_compress)
 
 
 
