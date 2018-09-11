@@ -116,11 +116,22 @@ These values are tested with `realistic_20ms` as a performance benchmark.
 
 ##### Performance results
 
-Using `realistic_20ms` timestamp and `moving_signal` as a benchmark on `big` set tested on a 2.8GHz Intel Core i7 we observe the following results:
+Using `realistic_20ms` timestamp and `moving_signal` on `big` size a benchmark tested on an AWS `t2.micro` instance, we observe the following results:
 
-* Packing throughput: 2348.86kB/s
-* Unpacking throughput: 2809.63kB/s
-* Compression ratio: 71.24%
+```
+Packing:
+	Total time: 0.0335s
+	Average throughput: 11670.03kB/s
+	Average latency: 0.33us
+Unpacking:
+	Total time: 0.0302s
+	Average throughput: 12929.12kB/s
+	Average latency: 0.30us
+Compression:
+	Original size: 1565506 Bytes
+	Packed size: 459386 Bytes
+	Compression ratio: 70.66% compressed
+```
 
 
 ## Future work
