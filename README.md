@@ -31,7 +31,7 @@ These requirements imply that the packing/compression should be executed seriall
 
 #### Observations, Assumptions and Approach
 
-The packing scheme used follows an observation/assumption that time in time-series data is, generally speaking, monotonically increasing and equally spaced. This being the case, we can therefore use a delta-of-delta approach to store the time data to reduce the integer size, and then use variable-length integer encoding (see [Wikipedia: Variable-length quantity](https://en.wikipedia.org/wiki/Variable-length_quantity)) which offers a more compact storage scheme when dealing with smaller integers than standard 32-bit encoding. This implementation takes inspiration from the [approach utilised by LLVM bitcode](https://www.llvm.org/docs/BitCodeFormat.html#signed-vbrs).
+The packing scheme used follows an observation/assumption that time in time-series data is, generally speaking, monotonically increasing and equally spaced. This being the case, we can therefore use a delta-of-delta approach to store the time data to reduce the integer size (as the difference between consecutive timestamps generally do not vary signficantlly, implies delta-of-delta close to zero), and then use variable-length integer encoding (see [Wikipedia: Variable-length quantity](https://en.wikipedia.org/wiki/Variable-length_quantity)) which offers a more compact storage scheme when dealing with smaller integers than standard 32-bit encoding. This implementation takes inspiration from the [approach utilised by LLVM bitcode](https://www.llvm.org/docs/BitCodeFormat.html#signed-vbrs).
 
 #### Delta-of-delta & variable-length encoding implementation
 
