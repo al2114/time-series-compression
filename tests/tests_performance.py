@@ -63,12 +63,12 @@ def testUnpack(filepath,outfile):
 def printReport(pack_time,unpack_time,N,strlen,pack_size):
     print "\tPacking:"
     print "\t\tTotal time: %.4fs" % pack_time
-    print "\t\tAverage throughput: %.2fkB/s" % ((4.0*N/pack_time)/1000.0)
+    print "\t\tAverage throughput: %.2fkB/s" % ((4.0*N/pack_time)/1024.0)
     print "\t\tAverage latency: %.2fus" % (1000000.0*pack_time/float(N))
 
     print "\tUnpacking:"
     print "\t\tTotal time: %.4fs" % unpack_time
-    print "\t\tAverage throughput: %.2fkB/s" % ((4.0*N/unpack_time)/1000.0)
+    print "\t\tAverage throughput: %.2fkB/s" % ((4.0*N/unpack_time)/1024.0)
     print "\t\tAverage latency: %.2fus" % (1000000.0*unpack_time/float(N))
 
     print "\tCompression:"
