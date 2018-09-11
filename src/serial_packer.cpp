@@ -4,6 +4,14 @@
 
 namespace SerialPacker {
 
+/*
+ *  SerialPacker provides pack/unpack functions to compress
+ *  streamed time-series data using delta-of-delta and variable
+ *  width encoding. See README for details of encoding scheme.
+ */
+
+    // Take an integer value and streams out the encoded binary
+    // byte by byte litte-endian
     static void encodeVarInt(int value, std::ostream &out) {
         bool neg = value < 0;
         unsigned val = neg?-value:value;
@@ -11,40 +19,46 @@ namespace SerialPacker {
         byte += (val & 0x3F) << 1; // Encode lower 6 bits
         val = val >> 6;
 
-        while(val) { // If there are more bits
+        while(val) { // While val is non-zero
             byte += 0x80; // Set byte MSB to indicate continuation
             out.write(&byte, 1);
             byte = val & 0x7F; // Setup byte for next 7 bits
             val = val >> 7;
         }
-        out.write(&byte, 1);
+        out.write(&byte, 1); // Last write has MSB = 0
     }
 
+    // Encodes a reset byte to indicate that an invalid ddelta value
+    // appeared (i.e. overflow). note: 0x1 represents -0 signed magnitude
+    // in the encoding scheme, hence it can be used as a special marker
     static void encodeResetByte(std::ostream &out) {
         char byte = 0x1;
         out.write(&byte, 1);
+    }
+
+    // Helper function to check for overflow when computing deltas
+    static bool validDelta(int delta, int curr, int prev) {
+        return (delta < curr) == (prev > 0);
     }
 
     void pack(std::istream &in, std::ostream &out)
     {
         int timestamp, value;
         int prev_ts = 0, prev_delta=0;
-        while(in >> timestamp >> value) {
+        while(in >> timestamp >> value) { // Read pair value from istream
             int delta = timestamp - prev_ts;
-            if((delta < timestamp) == (prev_ts > 0)) { // Check for valid delta
+            if(validDelta(delta, timestamp, prev_ts)) { // Check for valid delta
                 int ddelta = delta - prev_delta;
-                if((ddelta < delta) == (prev_delta > 0)) {
+                if(validDelta(ddelta, delta, prev_delta)) {
                     encodeVarInt(ddelta, out);
                 }
-                else {
-                    //ddleta overflow
+                else { // ddelta overflow
                     encodeResetByte(out);
                     delta = 0;
                     encodeVarInt(timestamp, out);
                 }
             }
-            else {
-                // delta overflow
+            else { // delta overflows
                 encodeResetByte(out);
                 delta = 0;
                 encodeVarInt(timestamp, out);
@@ -56,6 +70,10 @@ namespace SerialPacker {
 
     }
 
+
+    // Takes and decodes a full integer from the inpput stream and outputs
+    // the decoded integer to &value. Raises reset_flag if reset byte marker is
+    // detected. Returns 0 if input stream is at EOF else returns 1.
     static int decodeVarInt(std::istream &in, int &value, bool &reset_flag) {
         char byte;
         bool neg;
@@ -64,6 +82,8 @@ namespace SerialPacker {
 
         if(in.read(&byte, 1).eof())
             return 0;
+
+        // Detect reset marker, corresponding encodeResetFlag
         if(byte == 0x1){
             reset_flag = true;
             return 1;
@@ -73,7 +93,7 @@ namespace SerialPacker {
         val = (byte >> 1) & 0x3F;
         offset = 6;
 
-        while( byte & 0x80 ) {
+        while( byte & 0x80 ) { // Check continuation bit
             in.read(&byte, 1);
             val += (byte & 0x7F) << offset;
             offset += 7;
@@ -93,7 +113,8 @@ namespace SerialPacker {
 
         bool reset_flag = false;
 
-        while(decodeVarInt(in, value,reset_flag)) {
+        // While istream not in EOF, read into value decoded int
+        while(decodeVarInt(in, value, reset_flag)) {
             if(reset_flag) {
                 timestamp = 0;
                 delta = 0;
@@ -101,6 +122,7 @@ namespace SerialPacker {
             }
             else {
                 if(decoding_timestamp) {
+                    // value is ddelta
                     delta += value;
                     timestamp += delta;
                     out << timestamp;

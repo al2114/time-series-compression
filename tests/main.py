@@ -1,5 +1,7 @@
 #!/usr/bin/python
 import tests_correctness
+import tests_performance
+import sys
 
 test_sizes = {
     "small": 256,
@@ -17,15 +19,9 @@ def printTitle(title):
 if __name__ == "__main__":
 
     printTitle("Testing functional correctness")
+    tests_correctness.runTests()
 
-    for test in tests_correctness.tests:
-        print "Test case: " + test.__name__,
-        test()
-        print "... PASSED"
-
-    n = len(tests_correctness.tests)
-    print "\nSuccessfully passed " + str(n) + " out of " + str(n) + " tests";
-
-    printTitle("Correctness and performance tests on different models")
+    printTitle("Testing performance on different data models")
+    tests_performance.runTests()
 
 
