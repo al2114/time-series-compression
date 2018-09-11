@@ -61,23 +61,32 @@ def testUnpack(filepath,outfile):
 
 
 def printReport(pack_time,unpack_time,N,strlen,pack_size):
+
+    pack_throughput = ((4.0*N/pack_time)/1024.0)
+    pack_latency = (1000000.0*pack_time/float(N))
+    unpack_throughput = ((4.0*N/unpack_time)/1024.0)
+    unpack_latency = (1000000.0*pack_time/float(N))
+    compress_ratio = (100 * (1.0 - float(pack_size)/float(strlen)))
+
     print "\tPacking:"
     print "\t\tTotal time: %.4fs" % pack_time
-    print "\t\tAverage throughput: %.2fkB/s" % ((4.0*N/pack_time)/1024.0)
-    print "\t\tAverage latency: %.2fus" % (1000000.0*pack_time/float(N))
+    print "\t\tAverage throughput: %.2fkB/s" % pack_throughput
+    print "\t\tAverage latency: %.2fus" % pack_latency
 
     print "\tUnpacking:"
     print "\t\tTotal time: %.4fs" % unpack_time
-    print "\t\tAverage throughput: %.2fkB/s" % ((4.0*N/unpack_time)/1024.0)
-    print "\t\tAverage latency: %.2fus" % (1000000.0*unpack_time/float(N))
-
+    print "\t\tAverage throughput: %.2fkB/s" % unpack_throughput
+    print "\t\tAverage latency: %.2fus" % unpack_latency
     print "\tCompression:"
     print "\t\tOriginal size: %d Bytes" % strlen
     print "\t\tPacked size: %d Bytes" % pack_size
-    print "\t\tCompression ratio: %.2f%% compressed" % (100 * (1.0 - float(pack_size)/float(strlen)))
+    print "\t\tCompression ratio: %.2f%% compressed" % compress_ratio
     print ""
 
-def test(ts_mode,val_mode, scale):
+    return (True, pack_throughput, unpack_throughput, compress_ratio)
+
+
+def test(ts_mode,val_mode, scale, results):
     test_name = ts_mode + "_" + val_mode + "_" + scale
     filepath = "tmp/"+test_name+".pkd.bin"
     outfile = "tmp/"+test_name+".out"
@@ -104,18 +113,50 @@ def test(ts_mode,val_mode, scale):
     if output == indata:
         print "\t"*4+"... CORRECT"
         filesize = os.stat(filepath).st_size
-        printReport(avg_pack_time,avg_unpack_time,N,len(d),filesize)
+        performance = printReport(avg_pack_time,avg_unpack_time,N,len(d),filesize)
     else:
         print "\t"*4+"... INCORRECT"
+        performance = (False, 0,0,0)
+
+    results[test_name] = performance
 
 
 def runTests():
+    results = {}
     for ts_mode in timestamp_modes:
         for scale in scales:
-            test(ts_mode,"uniform_dist",scale)
+            test(ts_mode,"uniform_dist","small",results)
     for val_mode in value_modes:
         if val_mode is not "uniform_dist":
             for scale in scales:
-                test("realistic_200ms",val_mode,scale)
+                test("realistic_200ms",val_mode,scale,results)
+    count = 0
+    num_success = 0
+    best_compress = 0
+    best_compress_test = ""
+    avg_pack_throughput = 0
+    avg_unpack_throughput = 0
+    avg_compress = 0
+    for t in results:
+        count = count + 1
+        res = results[t]
+        if res[0]:
+            num_success = num_success+1
+        avg_pack_throughput = avg_pack_throughput + res[1]
+        avg_unpack_throughput = avg_unpack_throughput + res[2]
+        avg_compress = avg_compress + res[3]
+        if res[3] > best_compress:
+            best_compress_test = t
+            best_compress = res[3]
+    avg_pack_throughput = avg_pack_throughput/count
+    avg_unpack_throughput = avg_unpack_throughput/count
+    avg_compress = avg_compress/count
+
+    print "Completed %d out of %d performance tests\n" % (num_success, count)
+    print "Average packing throughput: %.2f kB/s" % avg_pack_throughput
+    print "Average unpacking throughput: %.2f kB/s" % avg_unpack_throughput
+    print "Average compress rate: %.2f%%" % avg_compress
+    print "Best compression test: %s (%.2f%%)" % (best_compress_test, best_compress)
+
 
 
