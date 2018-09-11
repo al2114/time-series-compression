@@ -20,4 +20,5 @@ clean:
 	rm tmp/*
 
 test: bin/serial_packer
+	mkdir -p tmp
 	python tests/main.py
