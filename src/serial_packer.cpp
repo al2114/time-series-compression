@@ -77,9 +77,10 @@ namespace SerialPacker {
     static int decodeVarInt(std::istream &in, int &value, bool &reset_flag) {
         char byte;
         bool neg;
-        int offset;
-        unsigned val;
+        int offset; // Offset acts as a pointer to where in the varbuf to store the bits
+        unsigned val; // Stores the value, unsigned to account INT_MIN
 
+        // Read in first byte and check EOF
         if(in.read(&byte, 1).eof())
             return 0;
 
@@ -89,8 +90,9 @@ namespace SerialPacker {
             return 1;
         }
 
+        // Check negative bit
         neg = byte & 1;
-        val = (byte >> 1) & 0x3F;
+        val = (byte >> 1) & 0x3F; // Store next 6 bits
         offset = 6;
 
         while( byte & 0x80 ) { // Check continuation bit
