@@ -20,7 +20,7 @@ def gen_random_ints(N):
     return [random.randint(MIN_INT,MAX_INT) for _ in range(N)]
 
 def gen_normal_dist(N, std, mean=0):
-    return [int(std*np.random.normal()) for _ in range(N)]
+    return [min(MAX_INT,max(int(std*np.random.normal()), MIN_INT)) for _ in range(N)]
 
 def gen_interval(N, tdelta=1, offset=0):
     return list(tdelta * np.array(range(N)) + offset)
