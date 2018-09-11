@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 
-#define USAGE_MSG "usage: stream_packer [<src_file> || --unpack <file>] [--target <target_file>]"
+#define USAGE_MSG "usage: serial_packer <src_file> || --unpack <file>] [--target <target_file>]"
 #define RET_ERROR(x) std::cerr << x << std::endl; \
     std::cerr << USAGE_MSG << std::endl; \
     return -1;
