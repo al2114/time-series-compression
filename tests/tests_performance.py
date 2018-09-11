@@ -7,9 +7,9 @@ import os
 
 
 scales = {
-        "small": 1000,
-        "medium": 15000,
-        "big": 100000
+        "small": 5000,
+        "medium": 50000,
+        "big": 500000
         }
 
 timestamp_modes = {

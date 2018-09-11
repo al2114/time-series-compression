@@ -90,7 +90,7 @@ Performance testing follows the requirements according to the following metrics:
 * **Average unpacking latency** – calculated as `TOTAL_TIME/NUMBER_OF_DATAPAIRS" in microseconds per unpacked pair
 * **Compression ratio** – calculated as `100 * (1 - PACKED_SIZE/ORIGINAL_SIZE)`
 
-Each test case tries to model sensible data that the system may encounter, and performs each case in `small`, `medium` and `big` sizes defined in `test/tests_performance.py`. These sizes are `1000`, `15000` and `100000` time-value datapairs respectively. Python's `testit` module is used to perform timing analyses in order to calculate the above metric.
+Each test case tries to model sensible data that the system may encounter, and performs each case in `small`, `medium` and `big` sizes defined in `test/tests_performance.py`. These sizes are `5000`, `50000` and `500000` time-value datapairs respectively. Python's `testit` module is used to perform timing analyses in order to calculate the above metric.
 
 Each test is performed 10 times to take an average of measured times. It is noteworthy that the larger tests are more representative of the algorithmic throughput as there is some constant overhead to setup the program contributing to the timing.
 
