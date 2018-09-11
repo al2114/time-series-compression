@@ -3,13 +3,13 @@
 `serial_packer` is a command-line program written in C++ that takes a stream of time-series data (as space-separated ASCII stream in the form `timestamp1(int) value1(int) timestamp2(int) value2(int) ...`) and packs/unpacks the data into/from a compressed file.
 
 ## Compiling
-Run `make` to build the program, the program is built into 
+Run `make` to build the program, the program is built into
 
 
 ## Usage
 ```
 Usage: serial_packer [ <src> || -u <file> ] [ -o <target> ]
-``` 
+```
 
 `serial_packer` offers two modes: pack mode (default) and unpack mode (by specifying `-u`/`--unpack` flag)
 
@@ -18,9 +18,9 @@ In the pack mode, if a `src` file is specified, the file will be packed from the
 In unpack mode, the `-u` flag must be followed by the path to the packed file that you wish to unpack.
 
 The `-o`/`--output` flag is an optional flag. In pack mode, it specifies the pathfile name for the packed output file, and defaults to `out.pkd.bin` if unspecified. In unpacked mode, this specifies the pathfile to write the unpacked data to, and will default to `stdout` if unspecified.
- 
+
 ## Design
- 
+
 The `serial_packer` is built and designed based on the following requirements:
 
 * Operates on data stream of integer time-value pairs
@@ -31,7 +31,7 @@ These requirements imply that the packing/compression should be executed seriall
 
 #### Observations, Assumptions and Approach
 
-The packing scheme used follows an observation/assumption that time in time-series data is, generally speaking, monotonically increasing and equally spaced. This being the case, we can therefore use a delta-of-delta approach to store the time data to reduce the integer size, and then use variable-length integer encoding (see [Wikipedia: Variable-length quantity](https://en.wikipedia.org/wiki/Variable-length_quantity)) which offers a more compact storage scheme when dealing with smaller integers than standard 32-bit encoding.
+The packing scheme used follows an observation/assumption that time in time-series data is, generally speaking, monotonically increasing and equally spaced. This being the case, we can therefore use a delta-of-delta approach to store the time data to reduce the integer size, and then use variable-length integer encoding (see [Wikipedia: Variable-length quantity](https://en.wikipedia.org/wiki/Variable-length_quantity)) which offers a more compact storage scheme when dealing with smaller integers than standard 32-bit encoding. This implementation takes inspiration from the [approach utilised by LLVM bitcode](https://www.llvm.org/docs/BitCodeFormat.html#signed-vbrs).
 
 #### Delta-of-delta & variable-length encoding implementation
 
@@ -55,7 +55,7 @@ The delta strategy may also be taken advantage of to packing the data value if w
 
 
 
- 
+
 ## Testing
 
 An integrated test-suite is provided written in Python. To run the tests, run `make test`.
