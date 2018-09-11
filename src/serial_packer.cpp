@@ -54,13 +54,13 @@ namespace SerialPacker {
                 }
                 else { // ddelta overflow
                     encodeResetByte(out);
-                    delta = 0;
+                    delta = timestamp;
                     encodeVarInt(timestamp, out);
                 }
             }
             else { // delta overflows
                 encodeResetByte(out);
-                delta = 0;
+                delta = timestamp;
                 encodeVarInt(timestamp, out);
             }
             encodeVarInt(value, out);
